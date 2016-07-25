@@ -14,7 +14,6 @@ install_requires = [
     'ruamel.yaml >=0.5.1, <0.6',
     'simplejson >=3.6, <4',
     'six >=1.9, <2',
-    'timelib >=0.2.4, <0.3',
     'Pillow >=2.7, <3',
     'mido >=1.1, <2'
 ]
