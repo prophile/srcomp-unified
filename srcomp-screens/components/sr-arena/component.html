@@ -1,0 +1,76 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html" />
+
+<link rel="import" href="../sr-corner/component.html" />
+
+<polymer-element name="sr-arena" attributes="arena maincorner">
+    <template>
+        <style>
+            :host {
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+            }
+
+            #corner0 {
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+            }
+
+            div {
+                display: flex;
+                display: -webkit-flex;
+                flex: 0 0 auto;
+                -webkit-flex: 0 0 auto;
+
+                height: 30%;
+            }
+
+            div > sr-corner {
+                flex: 1 1 auto;
+                -webkit-flex: 1 1 auto;
+            }
+        </style>
+
+        <sr-corner id="corner0" show="all"></sr-corner>
+
+        <div>
+            <sr-corner id="corner1" show="tla"></sr-corner>
+            <sr-corner id="corner2" show="tla"></sr-corner>
+            <sr-corner id="corner3" show="tla"></sr-corner>
+        </div>
+    </template>
+
+    <script>
+        Polymer({
+            comp: null,
+            arena: null,
+            maincorner: 0,
+            arenaChanged: function() {
+                var corners = this.shadowRoot.querySelectorAll('sr-corner');
+                for (var i = 0; i < corners.length; i++) {
+                    corners[i].arena = this.arena;
+                }
+            },
+            maincornerChanged: function() {
+                var otherCorners = [0, 1, 2, 3];
+                otherCorners.splice(this.maincorner, 1);
+
+                var corners = this.shadowRoot.querySelectorAll('sr-corner');
+                for (var i = 0; i < corners.length; i++) {
+                    if (i == 0) {
+                        corners[i].corner = this.maincorner;
+                    } else {
+                        corners[i].corner = otherCorners[i - 1];
+                    }
+                }
+            },
+            compChanged: function() {
+                this.$.corner0.comp = this.comp;
+                this.$.corner1.comp = this.comp;
+                this.$.corner2.comp = this.comp;
+                this.$.corner3.comp = this.comp;
+            }
+        });
+    </script>
+</polymer-element>

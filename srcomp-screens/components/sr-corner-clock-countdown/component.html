@@ -1,0 +1,68 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../sr-clock-pulse/component.html" />
+
+<polymer-element name="sr-corner-clock-countdown" attributes="match">
+    <template>
+        <style>
+            .container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: black;
+
+                display: flex;
+                display: -webkit-flex;
+                align-items: center;
+                -webkit-align-items: center;
+                justify-content: center;
+                -webkit-justify-content: center;
+            }
+
+            h1 {
+                font-size: 25em;
+                color: white;
+                text-align: center;
+                font-family: sans-serif;
+            }
+        </style>
+
+        <div class="container" hidden?="{{ !text }}">
+            <h1>{{ text }}</h1>
+        </div>
+
+        <sr-clock-pulse id="pulses"></sr-clock-pulse>
+    </template>
+
+    <script>
+        Polymer({
+            match: undefined,
+            currentGameStart: undefined,
+            ready: function() {
+                this.updateDisplay({detail: new Date()});
+                this.$.pulses.addEventListener('pulse', this.updateDisplay.bind(this));
+            },
+            matchChanged: function() {
+                if (this.match) {
+                    this.currentGameStart = new Date(this.match.times.game.start);
+                } else {
+                    this.currentGameStart = null;
+                }
+            },
+            updateDisplay: function(e) {
+                var now = e.detail;
+                if (now <= this.currentGameStart) {
+                    var t = (this.currentGameStart - now) / 1000;
+                    if (t <= 1) {
+                        this.text = 'Begin!'
+                    } else if (t <= 6) {
+                        this.text = parseInt(t);
+                    }
+                } else {
+                    this.text = null;
+                }
+            }
+        });
+    </script>
+</polymer-element>

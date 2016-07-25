@@ -1,0 +1,4 @@
+module.exports =
+  SRCOMP: "https://www.studentrobotics.org/comp-api"
+  WEB_PORT: 5001
+

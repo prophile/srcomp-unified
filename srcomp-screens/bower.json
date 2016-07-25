@@ -1,0 +1,22 @@
+{
+  "name": "srcomp-screens",
+  "version": "1.0.0",
+  "authors": [
+    "Student Robotics Competition Software SIG <srobo-devel@googlegroups.com>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#~0.5.2",
+    "core-pages": "Polymer/core-pages#~0.5.2",
+    "moment": "~2.9.0",
+    "core-ajax": "Polymer/core-ajax#~0.5.4"
+  }
+}

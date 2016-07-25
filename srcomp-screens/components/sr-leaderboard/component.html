@@ -1,0 +1,88 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../natural-sort/component.html" />
+<link rel="import" href="../sr-last-scored/component.html" />
+
+<polymer-element name="sr-leaderboard">
+    <template>
+        <style>
+            :host {
+                display: block;
+                font-size: 2.2em;
+                text-align: center;
+            }
+
+            td, th {
+                padding: 0.25em 0.5em;
+            }
+
+            #last-scored {
+                color: grey;
+                margin-top: 1em;
+            }
+        </style>
+
+        <table>
+            <tr>
+                <th colspan="2">Team</th>
+                <th width="30%">League Points</th>
+            </tr>
+
+            <template repeat="{{ team in leaderboard }}">
+                <tr>
+                    <td>{{ team.tla }}</td>
+                    <td>{{ team.name }}</td>
+                    <td>{{ team.scores.league }}</td>
+                </tr>
+            </template>
+        </table>
+
+        <sr-last-scored id="last-scored"></sr-last-scored>
+    </template>
+
+    <script>
+        Polymer({
+            comp: null,
+            teams: {},
+            leaderboard: [],
+            tableUpdateRequest: undefined,
+            compChanged: function() {
+                this.comp.stream.addEventListener('team', function(e) {
+                    this.teams[e.detail.tla] = e.detail;
+                    this.requestTableUpdate();
+                }.bind(this));
+
+                this.$['last-scored'].comp = this.comp;
+            },
+            requestTableUpdate: function() {
+                if (this.tableUpdateRequest != undefined) {
+                    clearTimeout(this.tableUpdateRequest);
+                }
+
+                this.tableUpdateRequest = setTimeout(function() {
+                    this.updateTable();
+                    this.tableUpdateRequest = undefined;
+                }.bind(this), 1000);
+            },
+            updateTable: function() {
+                var leaderboard = [];
+                for (var key in this.teams) {
+                    leaderboard.push(this.teams[key]);
+                }
+
+                leaderboard.sort(function(a, b) {
+                    // smaller league pos at the top
+                    var diff = a.league_pos - b.league_pos;
+                    if (diff == 0) {
+                        return naturalSort(a.tla, b.tla);
+                    } else {
+                        return diff;
+                    }
+                });
+
+                leaderboard.splice(6);
+
+                this.leaderboard = leaderboard;
+            }
+        });
+    </script>
+</polymer-element>

@@ -1,0 +1,203 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html" />
+
+<polymer-element name="sr-knockout-diagram">
+    <template>
+        <style>
+            :host {
+                display: block;
+                font-size: 0.5em;
+            }
+
+            #knockout {
+                display: flex;
+                display: -webkit-flex;
+                align-items: center;
+                -webkit-align-items: center;
+            }
+
+            .round {
+                margin: 0 1.75em;
+                display: flex;
+                display: -webkit-flex;
+                flex-direction: column;
+                -webkit-flex-direction: column;
+            }
+
+            .round > div {
+                margin: 0.3em 0;
+            }
+
+            .round h1 {
+                font-size: 2em;
+                margin: 0.2em 0;
+                padding: 0 0.2em;
+            }
+
+            .round p {
+                font-size: 2em;
+                margin: 0.2em 0;
+                padding: 0 0.2em;
+            }
+
+            .match span {
+                padding: 0 0.2em;
+            }
+        </style>
+
+        <div id="knockout">
+            <template repeat="{{ round, i in rounds }}">
+                <div class="round">
+                    <template repeat="{{ match in round }}">
+                        <div class="match">
+                            <h1>{{ match.description }}</h1>
+                            <template repeat="{{ game in match.games }}">
+                                <p style="background-color: {{ arenas[game.arena].colour | formatArenaColour }}">
+                                    <strong>{{ arenas[game.arena].display_name }}</strong>
+                                    <template repeat="{{ team, corner in game.teams }}">
+                                        <span style="color: {{ corners[corner].colour }}">{{ team || '—' }}</span>
+                                    </template>
+                                </p>
+                            </template>
+                        </div>
+                    </template>
+                </div>
+            </template>
+        </div>
+    </template>
+
+    <script>
+        var process_knockout_round = function() {
+            var build_game = function(info) {
+                return {
+                    "arena": info.arena,
+                    "teams": info.teams
+                };
+            };
+            var group_games = function(games) {
+                // group the given games by number, assuming they're in order.
+                var game_groups = [];
+                var last_group = null;
+                var last_num = null;
+
+                for (var i=0; i<games.length; i++) {
+                    var game = games[i];
+                    if (last_num == game.num) {
+                        last_group.push(game);
+                    } else {
+                        last_group = [game];
+                        last_num   = game.num;
+                        game_groups.push(last_group);
+                    }
+                }
+
+                return game_groups;
+            }
+            return function(round) {
+                var game_groups = group_games(round);
+
+                var matches = [];
+                for (var i=0; i<game_groups.length; i++) {
+                    var match_games = game_groups[i];
+                    var number, description, time;
+                    var game_details = [];
+                    for (var j=0; j<match_games.length; j++) {
+                        var game = match_games[j];
+                        if (j == 0) {
+                            number = game.num;
+                            description = game.display_name;
+                            time = new Date(game.times.slot.start);
+                        }
+                        game_details.push(build_game(game));
+                    }
+
+                    matches.push({
+                        'number': number,
+                        'description': description,
+                        'time': time,
+                        'games': game_details
+                    });
+                }
+                return matches;
+            };
+        }();
+
+        var processKnockouts = function(rounds, tiebreaker) {
+            var output = [];
+            for (var i = 0; i < rounds.length; i++) {
+                output.push(process_knockout_round(rounds[i]));
+            }
+
+            if (tiebreaker) {
+                output.push([
+                    {
+                        'number': tiebreaker.num,
+                        'description': tiebreaker.display_name,
+                        'time': new Date(tiebreaker.times.slot.start),
+                        'games': [{
+                            'arena': tiebreaker.arena,
+                            'teams': tiebreaker.teams
+                        }]
+                    }
+                ]);
+            }
+
+            return output;
+        };
+
+        Polymer({
+            comp: null,
+            arenas: undefined,
+            corners: undefined,
+            rounds: undefined,
+            compChanged: function() {
+                this.comp.stream.addEventListener('match',
+                    this.updateDiagram.bind(this));
+
+                this.comp.stream.addEventListener('knockouts',
+                    this.updateDiagram.bind(this));
+
+                this.comp.stream.addEventListener('tiebreaker',
+                    this.updateDiagram.bind(this));
+
+                this.comp.api.getArenas(function(arenas) {
+                    this.arenas = arenas;
+                    this.updateDiagram();
+                }.bind(this));
+
+                this.comp.api.getCorners(function(corners) {
+                    this.corners = corners;
+                    this.updateDiagram();
+                }.bind(this));
+            },
+            sliceRounds: function(rounds) {
+                var start = rounds.length - 5;
+                if (start < 0) {
+                  start = 0;
+                }
+
+                return rounds.slice(start);
+            },
+            updateDiagram: function() {
+                if (this.arenas == null || this.corners == null) {
+                    return;  // wait until they're set
+                }
+
+                this.comp.api.getKnockout(function(rounds) {
+                    this.comp.api.getTiebreaker(function(tiebreaker) {
+                        this.rounds = processKnockouts(this.sliceRounds(rounds), tiebreaker);
+
+                        this.style.fontSize = Math.sqrt(5 / this.rounds.length) + 'em';
+                    }.bind(this));
+                }.bind(this));
+            },
+            formatArenaColour: function(val) {
+                if (val) {
+                    var r = parseInt(val.substr(1, 2), 16);
+                    var g = parseInt(val.substr(3, 2), 16);
+                    var b = parseInt(val.substr(5, 2), 16);
+                    return 'rgba(' + r + ', ' + g + ', ' + b + ', 0.1)';
+                }
+            },
+        });
+    </script>
+</polymer-element>

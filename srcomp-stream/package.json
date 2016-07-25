@@ -1,0 +1,26 @@
+{
+  "name": "srcomp-stream",
+  "version": "2.0.0",
+  "description": "srcomp live events stream server",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/prophile/srcomp-stream"
+  },
+  "author": "Alistair Lynn",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/prophile/srcomp-stream/issues"
+  },
+  "homepage": "https://github.com/prophile/srcomp-stream",
+  "dependencies": {
+    "baconjs": "^0.7.30",
+    "coffee-script": "^1.8.0",
+    "moment": "^2.8.3",
+    "request": "^2.47.0",
+    "underscore": "^1.7.0"
+  }
+}
