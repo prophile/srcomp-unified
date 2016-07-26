@@ -322,9 +322,13 @@ def current_state():
             if staging_times['opens'] <= time:
                 staging_matches.append(match_json_info(comp, match))
 
-            first_signal = min(staging_times['signal_shepherds'].values())
-            if first_signal <= time:
-                shepherding_matches.append(match_json_info(comp, match))
+            try:
+                first_signal = min(staging_times['signal_shepherds'].values())
+                if first_signal <= time:
+                    shepherding_matches.append(match_json_info(comp, match))
+            except ValueError:
+                # No shepherding signalling
+                pass
 
     return jsonify(delay=delay_seconds, time=time.isoformat(),
                    matches=matches, staging_matches=staging_matches,
